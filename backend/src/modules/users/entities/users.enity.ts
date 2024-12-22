@@ -1,7 +1,17 @@
-import { Exclude } from 'class-transformer';
+import {
+    Entity,
+    Column,
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    OneToMany,
+    ManyToMany,
+    JoinTable
+} from 'typeorm';
+import { Scoreboard } from 'src/modules/scoreBoards/entities/scoreboard.entity';
 import { Room } from 'src/modules/rooms/entities/room.entity';
-import { UserRole, CommonStatus } from 'src/utils/constants';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { CommonStatus, UserRole } from 'src/utils/constants';
 
 @Entity('t_user')
 export class User {
@@ -38,5 +48,9 @@ export class User {
     updatedAt: Date;
 
     @ManyToMany(() => Room, (room) => room.participants)
+    @JoinTable({ name: 'user_joined_room' })
     rooms: Room[];
+
+    @OneToMany(() => Scoreboard, (scoreboard) => scoreboard.user, { cascade: true })
+    scoreboards: Scoreboard[];
 }

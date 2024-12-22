@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Room } from './entities/room.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,8 @@ import { HttpStatusCode } from 'axios';
 import { UserService } from '../users/user.service';
 import { RoomGateway } from './gateway/room.gateway';
 import { CommonStatus } from 'src/utils/constants';
+import { ParticipantDTO } from './dto/participant.dto';
+import { ScoreboardService } from '../scoreBoards/scoreboard.service';
 
 @Injectable()
 export class RoomService {
@@ -15,12 +17,15 @@ export class RoomService {
         @InjectRepository(Room)
         private RoomRepository: Repository<Room>,
         private readonly userService: UserService,
-        private readonly roomGateway: RoomGateway
+        private readonly roomGateway: RoomGateway,
+        @Inject(forwardRef(() => ScoreboardService)) private scoreboardService: ScoreboardService
     ) {}
 
     private async getRoomByCode(code: string): Promise<Room | null> {
         const room = await this.RoomRepository.createQueryBuilder('room')
             .leftJoinAndSelect('room.participants', 'participants')
+            .leftJoinAndSelect('room.scoreboards', 'scoreboards')
+            .leftJoinAndSelect('scoreboards.user', 'user')
             .select([
                 'room.id',
                 'room.code',
@@ -29,12 +34,24 @@ export class RoomService {
                 'room.createdAt',
                 'room.updatedAt',
                 'participants.id',
-                'participants.displayName'
+                'participants.displayName',
+                'scoreboards.score',
+                'user.id',
+                'user.displayName'
             ])
             .where('room.code = :code', { code })
             .andWhere('room.status = :status', { status: CommonStatus.ACTIVE })
+            .orderBy('scoreboards.score', 'DESC')
             .getOne();
         return room;
+    }
+
+    async getRoomParticipants(code: string): Promise<ParticipantDTO[]> {
+        const room = await this.getRoomByCode(code);
+        if (!room) {
+            throw new NotFoundException('Room not found');
+        }
+        return room.participants;
     }
 
     async findOneByCode(code: string): Promise<Room | null> {
@@ -87,6 +104,10 @@ export class RoomService {
 
         room.participants.push(user);
         await this.RoomRepository.save(room);
+        const userScoreboard = await this.scoreboardService.getUserScoreboardByRoomCode(code, userId);
+        if (!userScoreboard) {
+            await this.scoreboardService.create(userId, code);
+        }
         this.roomGateway.userJoinedRoom(code, { userId: user.id, displayName: user.displayName }, room);
 
         return HttpStatusCode.Ok;

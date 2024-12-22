@@ -23,7 +23,7 @@ export class UserController {
     @Post('guest')
     async createGuestAccount(@Body() createUserDto: CreateUserDto) {
         const user = await this.userService.create(createUserDto);
-        return await this.authService.login({ userId: user.id, displayName: user.displayName });
+        return await this.authService.loginAsGuest({ userId: user.id, displayName: user.displayName });
     }
 
     @UseGuards(AuthGuard('jwt'))

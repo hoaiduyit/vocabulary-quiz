@@ -1,4 +1,5 @@
 import { ParticipantDTO } from './participant.dto';
+import { ScoreboardDTO } from './scoreboard.dto';
 
 export class RoomDTO {
     id: string;
@@ -7,4 +8,5 @@ export class RoomDTO {
     createdAt: Date;
     updatedAt: Date;
     participants: ParticipantDTO[];
+    scoreboards: ScoreboardDTO[];
 }

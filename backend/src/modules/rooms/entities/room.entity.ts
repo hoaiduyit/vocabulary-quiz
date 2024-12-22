@@ -1,5 +1,3 @@
-import { User } from 'src/modules/users/entities/users.enity';
-import { CommonStatus } from 'src/utils/constants';
 import {
     Entity,
     Column,
@@ -8,8 +6,12 @@ import {
     UpdateDateColumn,
     Index,
     ManyToMany,
-    JoinTable
+    JoinTable,
+    OneToMany
 } from 'typeorm';
+import { Scoreboard } from 'src/modules/scoreBoards/entities/scoreboard.entity';
+import { User } from 'src/modules/users/entities/users.enity';
+import { CommonStatus } from 'src/utils/constants';
 
 @Entity('t_room')
 @Index(['code'], { unique: true })
@@ -35,4 +37,7 @@ export class Room {
     @ManyToMany(() => User, (user) => user.rooms, { cascade: true })
     @JoinTable({ name: 'room_participants' })
     participants: User[];
+
+    @OneToMany(() => Scoreboard, (scoreboard) => scoreboard.room, { cascade: true })
+    scoreboards: Scoreboard[];
 }

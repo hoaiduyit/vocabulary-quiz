@@ -28,6 +28,15 @@ export class RoomGateway {
         });
     }
 
+    userScoreUpdated(code: string, userId: string, room: RoomDTO) {
+        this.server.to(code).emit('scoreUpdated', {
+            userId,
+            message: `User score updated`,
+            room,
+            scoreboards: room.scoreboards
+        });
+    }
+
     hostJoinedRoom(code: string, room: RoomDTO) {
         this.server.to(code).emit('hostJoined', {
             message: `Host joined the room`,
