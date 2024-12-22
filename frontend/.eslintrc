@@ -1,0 +1,80 @@
+{
+    "env": {
+      "node": true,
+      "jest": true,
+      "es6": true,
+      "browser": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:prettier/recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:@next/next/recommended",
+      "plugin:react/recommended"
+    ],
+    "plugins": ["@typescript-eslint", "react", "react-hooks", "import"],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "project": "tsconfig.json",
+      "sourceType": "module"
+    },
+    "settings": {
+      "import/resolver": {
+        "node": {
+          "extensions": [".ts", ".tsx"]
+        },
+        "typescript": {}
+      },
+      "react": {
+        "version": "detect"
+      }
+    },
+    "rules": {
+      // general rules
+      "object-curly-newline": 0,
+      "radix": 0,
+      "no-console": 1,
+      "no-underscore-dangle": 0,
+      "no-plusplus": 0,
+      "no-param-reassign": 0,
+      "consistent-return": 0,
+      "no-use-before-define": "off",
+      "no-shadow": "off",
+      "camelcase": 1,
+      "no-case-declarations": 0,
+      "import/order": [
+        1,
+        {
+          "groups": ["external", "builtin", "internal", "sibling", "parent", "index"],
+          "pathGroupsExcludedImportTypes": [
+            "external",
+            "builtin",
+            "internal",
+            "sibling",
+            "parent",
+            "index"
+          ],
+          "alphabetize": {
+            "order": "asc",
+            "caseInsensitive": true
+          }
+        }
+      ],
+  
+      // react rules
+      "react/jsx-no-bind": 0,
+      "react/react-in-jsx-scope": 0,
+      "react/display-name": 0,
+      "react/prop-types": [1, { "skipUndeclared": true }],
+  
+      // typescript
+      "@typescript-eslint/explicit-module-boundary-types": 0,
+      "@typescript-eslint/no-inferrable-types": 0,
+      "@typescript-eslint/no-explicit-any": 0,
+      "@typescript-eslint/no-empty-function": 0,
+      "@typescript-eslint/no-use-before-define": 2,
+      "@typescript-eslint/no-shadow": 2
+    }
+  }
+  

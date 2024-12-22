@@ -6,6 +6,10 @@ import { RoomDTO } from '../dto/query-room.dto';
 export class RoomGateway {
     private server: Server;
 
+    afterInit(server: Server) {
+        this.server = server;
+    }
+
     userJoinedRoom(code: string, user: { displayName: string; userId: string }, room: RoomDTO) {
         this.server.to(code).emit('userJoined', {
             userId: user.userId,

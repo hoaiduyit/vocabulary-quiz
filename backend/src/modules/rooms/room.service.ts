@@ -24,6 +24,7 @@ export class RoomService {
             .select([
                 'room.id',
                 'room.code',
+                'room.hostId',
                 'room.status',
                 'room.createdAt',
                 'room.updatedAt',
