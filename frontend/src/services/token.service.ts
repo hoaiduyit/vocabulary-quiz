@@ -1,6 +1,5 @@
-import { TokenModel } from "@/models/token.model";
-import { TokenType } from "@/types/token.type";
-
+import { TokenModel } from '@/models/token.model';
+import { TokenType } from '@/types/token.type';
 
 class TokenServices {
   constructor() {}

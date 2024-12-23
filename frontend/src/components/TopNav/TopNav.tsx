@@ -2,13 +2,22 @@ import Link from 'next/link';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import { leaveRoom } from '@/services/room.service';
+import { useUserProfileCommit, useUserProfileSelector } from '@/contexts/userProfile.context';
+import { logout } from '@/services/auth.service';
 
 export const TopNav = () => {
   const { query, push } = useRouter();
+  const profile = useUserProfileSelector((store) => store.profile);
+  const commit = useUserProfileCommit();
 
   const handleLeaveRoom = async () => {
     await leaveRoom(query.code as string);
     push('/');
+  };
+
+  const handleLogout = () => {
+    logout();
+    commit({ profile: null });
   };
 
   return (
@@ -23,6 +32,11 @@ export const TopNav = () => {
           </Button>
         )}
       </div>
+      {profile && !query.code && (
+        <Button variant="contained" color="error" onClick={handleLogout}>
+          Logout
+        </Button>
+      )}
     </div>
   );
 };

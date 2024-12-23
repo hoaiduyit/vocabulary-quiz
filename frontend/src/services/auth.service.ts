@@ -46,11 +46,13 @@ export const loginAsGuest = async (displayName: string) => {
 export const register = async ({
   username,
   email = null,
+  displayName,
   password,
   confirmPassword,
 }: {
   username: string;
   email?: string | null;
+  displayName: string;
   password: string;
   confirmPassword: string;
 }) => {
@@ -59,6 +61,7 @@ export const register = async ({
       endpoint: REGISTER_API,
       data: {
         username,
+        displayName,
         email,
         password,
         confirmPassword,
@@ -71,8 +74,13 @@ export const register = async ({
   }
 };
 
+export const logout = () => {
+  tokenService.clearToken();
+};
+
 export const getUserProfile = async () => {
-  if (!tokenService.getAccessToken()) return;
+  const { accessToken } = tokenService.getAccessToken();
+  if (!accessToken) return;
   try {
     const { data } = await api.get({
       endpoint: USER_PROFILE_API,

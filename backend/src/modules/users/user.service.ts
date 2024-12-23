@@ -90,7 +90,7 @@ export class UserService {
         if (existedUserName) {
             throw new ForbiddenException('User already existed');
         }
-        if (body.username && body.email && body.password && body.confirmPassword && body.displayName) {
+        if (body.username && body.password && body.confirmPassword && body.displayName) {
             if (body.password !== body.confirmPassword) {
                 throw new BadRequestException('Confirm password does not match');
             }

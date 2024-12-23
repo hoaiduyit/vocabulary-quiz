@@ -1,4 +1,3 @@
-import { Leaderboard } from '@/components/Leaderboard/Leaderboard';
 import { Modal } from '@/components/Modal/Modal';
 import { quizs } from '@/constants';
 import { useSignInDialogCommit } from '@/contexts/signin.context';
@@ -51,6 +50,7 @@ function RoomPage({
   const profile = useUserProfileSelector((store) => store.profile);
   const fetching = useUserProfileSelector((store) => store.fetching);
   const signInDialogCommit = useSignInDialogCommit();
+  const [leaderboard, setLeaderboard] = useState(scoreboards.scoreboards);
   const [roomData, setRoomData] = useState<RoomType | null>(room);
   const [quizNo, setQuizNo] = useState(0);
   const [selectedAnwsers, setSelectedAnwsers] = useState<{ [key: number]: number }>(
@@ -99,18 +99,43 @@ function RoomPage({
 
   useEffect(() => {
     const code = query.code as string;
+
+    if (!code) return;
+
+    if (!socketService.isConnected()) {
+      console.error('Socket is not connected.');
+      return;
+    }
+
+    // Emit events
     socketService.joinEmit(code);
-    socketService.joinRoom((data) => {
+    socketService.updateScoreEmit(code);
+
+    // Event listeners
+    const handleUserJoined = (data: any) => {
       setNotifyUserJoinOrLeave(data.message);
       setRoomData(data.room);
-    });
-    socketService.leaveRoom((data) => {
+    };
+
+    const handleUserLeft = (data: any) => {
       setNotifyUserJoinOrLeave(data.message);
       setRoomData(data.room);
-    });
+    };
+
+    const handleScoreUpdated = (data: any) => {
+      setLeaderboard(data.scoreboards.scoreboards);
+    };
+
+    socketService.onUserJoined(handleUserJoined);
+    socketService.onUserLeft(handleUserLeft);
+    socketService.onScoreUpdated(handleScoreUpdated);
+
     return () => {
+      // Cleanup: Remove specific listeners
+      socketService.off('userJoined', handleUserJoined);
+      socketService.off('userLeft', handleUserLeft);
+      socketService.off('scoreUpdated', handleScoreUpdated);
       socketService.leaveEmit(code);
-      socketService.cleanUp();
     };
   }, [query.code]);
 
@@ -118,7 +143,18 @@ function RoomPage({
     <div className="p-6 flex flex-col gap-4">
       <h2 className="text-xl">Participants: {roomData?.participants?.length || 0}</h2>
       <div className="flex gap-2">
-        <Leaderboard scoreboards={scoreboards.scoreboards} socketService={socketService} />
+        <div className="w-1/6 flex flex-col gap-2">
+          <h4 className="text-lg font-bold uppercase">leaderboard</h4>
+          <ul className="list-decimal pl-4">
+            {leaderboard.map((item) => (
+              <li key={item.id}>
+                <strong>{item.user.displayName}</strong>
+                <br />
+                Scores: {item.score}
+              </li>
+            ))}
+          </ul>
+        </div>
         <div className="w-5/6 flex flex-col gap-6">
           <p className="text-lg">{quizs[quizNo].question}</p>
           <div className="flex gap-4 items-center">

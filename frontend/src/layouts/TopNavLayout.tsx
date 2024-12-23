@@ -1,12 +1,17 @@
 import { TopNav } from '@/components/TopNav/TopNav';
 import { useSignInDialogCommit, useSignInDialoggSelector } from '@/contexts/signin.context';
 import { Modal } from '@/components/Modal/Modal';
-import { ChangeEvent, FocusEvent, ReactNode, useState } from 'react';
+import { ChangeEvent, FocusEvent, ReactNode, useEffect, useState } from 'react';
 import { TextField } from '@mui/material';
 import { getUserProfile, login, loginAsGuest, register } from '@/services/auth.service';
-import { useUserProfileCommit, useUserProfileSelector } from '@/contexts/userProfile.context';
+import {
+  UserProfileProvider,
+  useUserProfileCommit,
+  useUserProfileSelector,
+} from '@/contexts/userProfile.context';
 import { joinRoom } from '@/services/room.service';
 import { useRouter } from 'next/router';
+import { UserType } from '@/types/user.type';
 
 enum Mode {
   signin = 'signin',
@@ -35,6 +40,11 @@ const signInDefaultValue: InputType = {
 };
 const registerDefaultValue: InputType = {
   username: {
+    value: '',
+    isDirty: false,
+    errorMsg: '',
+  },
+  displayName: {
     value: '',
     isDirty: false,
     errorMsg: '',
@@ -68,6 +78,7 @@ const signInComps = [
     label: 'Password',
     required: true,
     autoFocus: false,
+    type: 'password',
   },
 ];
 
@@ -79,6 +90,11 @@ const registerComps = [
     autoFocus: true,
   },
   {
+    id: 'displayName',
+    label: 'Name',
+    required: true,
+  },
+  {
     id: 'email',
     label: 'Email',
   },
@@ -86,15 +102,17 @@ const registerComps = [
     id: 'password',
     label: 'Password',
     required: true,
+    type: 'password',
   },
   {
     id: 'confirmPassword',
     label: 'Confirm Password',
     required: true,
+    type: 'password',
   },
 ];
 
-export const TopNavLayout = ({ children }: { children: ReactNode }) => {
+const Layout = ({ children }: { children: ReactNode }) => {
   const { push, query } = useRouter();
   const profile = useUserProfileSelector((store) => store.profile);
   const openSignInDialog = useSignInDialoggSelector((store) => store.openSignInDialog);
@@ -283,7 +301,8 @@ export const TopNavLayout = ({ children }: { children: ReactNode }) => {
         );
       case Mode.register:
         return Object.keys(registerContent).some(
-          (item) => registerContent[item].isDirty || !registerContent[item].value,
+          (item) =>
+            item !== 'email' && (registerContent[item].isDirty || !registerContent[item].value),
         );
       default:
         return false;
@@ -303,26 +322,31 @@ export const TopNavLayout = ({ children }: { children: ReactNode }) => {
 
   const handleSubmit = async () => {
     if (isSubmitButtonDisabled()) return;
-    switch (mode) {
-      case Mode.signin:
-        await login({
-          username: signInContent.username.value,
-          password: signInContent.password.value,
-        });
-        await onFetchUserProfile();
-        handleCloseDialog();
-        break;
-      case Mode.register:
-        await register({
-          username: registerContent.username.value,
-          email: registerContent.email.value,
-          password: registerContent.password.value,
-          confirmPassword: registerContent.confirmPassword.value,
-        });
-        await onFetchUserProfile();
-        handleCloseDialog();
-      default:
-        break;
+    try {
+      switch (mode) {
+        case Mode.signin:
+          await login({
+            username: signInContent.username.value,
+            password: signInContent.password.value,
+          });
+          await onFetchUserProfile();
+          handleCloseDialog();
+          break;
+        case Mode.register:
+          await register({
+            username: registerContent.username.value,
+            displayName: registerContent.displayName.value,
+            email: registerContent.email.value,
+            password: registerContent.password.value,
+            confirmPassword: registerContent.confirmPassword.value,
+          });
+          await onFetchUserProfile();
+          handleCloseDialog();
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -461,5 +485,25 @@ export const TopNavLayout = ({ children }: { children: ReactNode }) => {
         )}
       </Modal>
     </>
+  );
+};
+
+export const TopNavLayout = ({ children }: { children: ReactNode }) => {
+  const { pathname } = useRouter();
+  const [profile, setProfile] = useState<UserType | null>(null);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const data = await getUserProfile();
+      setProfile(data);
+      setFetching(false);
+    })();
+  }, [pathname]);
+
+  return (
+    <UserProfileProvider value={{ profile, fetching }}>
+      <Layout>{children}</Layout>
+    </UserProfileProvider>
   );
 };

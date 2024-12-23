@@ -15,6 +15,7 @@ export class SocketService {
     return SocketService.instance;
   }
 
+  // Emit methods
   joinEmit(code: string) {
     this.socket.emit('joinRoom', { code });
   }
@@ -27,47 +28,32 @@ export class SocketService {
     this.socket.emit('updateScore', { code });
   }
 
-  joinRoom(cb: (data: any) => void) {
-    this.socket.once('userJoined', (data) => {
-      console.log('User joined:', data);
-      cb(data);
-    });
+  // Event listeners
+  onUserJoined(cb: (data: any) => void) {
+    this.socket.on('userJoined', cb);
   }
 
-  leaveRoom(cb: (data: any) => void) {
-    this.socket.once('userLeft', (data) => {
-      console.log('User left:', data);
-      cb(data);
-    });
+  onUserLeft(cb: (data: any) => void) {
+    this.socket.on('userLeft', cb);
   }
 
-  hostJoinRoom(code: string, cb: (data: any) => void) {
-    this.socket.emit('joinRoom', { code });
-
-    this.socket.once('hostJoined', (data) => {
-      console.log('Host joined:', data);
-      cb(data);
-    });
+  onScoreUpdated(cb: (data: any) => void) {
+    this.socket.on('scoreUpdated', cb);
   }
 
-  hostLeaveRoom(code: string, cb: (data: any) => void) {
-    this.socket.emit('leaveRoom', { code });
-
-    this.socket.once('hostLeft', (data) => {
-      console.log('Host left:', data);
-      cb(data);
-    });
+  // Remove specific listeners
+  off(eventName: string, cb?: (...args: any[]) => void) {
+    this.socket.off(eventName, cb);
   }
 
-  updatedUserScores(cb: (data: any) => void) {
-    this.socket.once('scoreUpdated', (data) => {
-      console.log('user score updated', data);
-      cb(data);
-    });
+  // Check if socket is connected
+  isConnected(): boolean {
+    return this.socket.connected;
   }
 
+  // Global cleanup (optional, but avoid overuse)
   cleanUp() {
-    console.log('Cleaning up socket listeners');
+    console.log('Cleaning up all socket listeners');
     this.socket.off();
   }
 }
