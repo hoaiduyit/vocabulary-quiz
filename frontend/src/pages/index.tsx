@@ -61,8 +61,8 @@ function Home() {
               Login to join
             </Button>
             or
-            <Button variant="outlined" className="text-lg">
-              Join a room as guest
+            <Button variant="outlined" className="text-lg" onClick={handleOpenJoinRoomDialog}>
+              Join as a guest
             </Button>
           </>
         )}

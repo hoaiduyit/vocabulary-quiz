@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
-import { useUserProfileSelector } from '@/contexts/userProfile.context';
 import { leaveRoom } from '@/services/room.service';
 
 export const TopNav = () => {
   const { query, push } = useRouter();
-  const profile = useUserProfileSelector((store) => store.profile);
 
   const handleLeaveRoom = async () => {
     await leaveRoom(query.code as string);
@@ -19,16 +17,11 @@ export const TopNav = () => {
         Vocabulary Quiz
       </Link>
       <div className="flex gap-2">
-        {!query.code ? (
-          <Button variant="contained">Join room</Button>
-        ) : (
+        {query.code && (
           <Button variant="contained" color="error" onClick={handleLeaveRoom}>
             Leave room
           </Button>
         )}
-        {/* <Dropdown menu={{ items: [] }} placement="bottomRight">
-          <Button>Profile</Button>
-        </Dropdown> */}
       </div>
     </div>
   );

@@ -19,18 +19,20 @@ type NextWebAppProps = AppProps & { Component: NextPageWithLayout };
 
 function NextWebApp({ Component, pageProps }: NextWebAppProps) {
   const [profile, setProfile] = useState<UserType | null>(null);
+  const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
     (async () => {
       const data = await getUserProfile();
       setProfile(data);
+      setFetching(false);
     })();
   }, []);
 
   const Layout = Component.layout ?? DefaultLayout;
 
   return (
-    <UserProfileProvider value={{ profile }}>
+    <UserProfileProvider value={{ profile, fetching }}>
       <SignInDialogProvider>
         <Layout>
           <Component {...pageProps} />

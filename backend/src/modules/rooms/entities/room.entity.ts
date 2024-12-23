@@ -9,7 +9,7 @@ import {
     JoinTable,
     OneToMany
 } from 'typeorm';
-import { Scoreboard } from 'src/modules/scoreBoards/entities/scoreboard.entity';
+import { Scoreboard } from 'src/modules/rooms/entities/scoreboard.entity';
 import { User } from 'src/modules/users/entities/users.enity';
 import { CommonStatus } from 'src/utils/constants';
 

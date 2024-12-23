@@ -7,15 +7,10 @@ import { RoomService } from './room.service';
 import { RoomController } from './room.controller';
 import { UserModule } from '../users/user.module';
 import { RoomGateway } from './gateway/room.gateway';
-import { ScoreboardModule } from '../scoreBoards/scoreboard.module';
+import { Scoreboard } from './entities/scoreboard.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([Room]),
-        forwardRef(() => AuthModule),
-        forwardRef(() => UserModule),
-        forwardRef(() => ScoreboardModule)
-    ],
+    imports: [TypeOrmModule.forFeature([Room, Scoreboard]), forwardRef(() => AuthModule), forwardRef(() => UserModule)],
     providers: [RoomService, JwtService, RoomGateway],
     controllers: [RoomController],
     exports: [TypeOrmModule, RoomService]

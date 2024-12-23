@@ -1,6 +1,7 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { RoomDTO } from '../dto/query-room.dto';
+import { QueryScoreboardDto } from '../dto/query-scoreboard.dto';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class RoomGateway {
@@ -28,12 +29,11 @@ export class RoomGateway {
         });
     }
 
-    userScoreUpdated(code: string, userId: string, room: RoomDTO) {
+    userScoreUpdated(code: string, userId: string, scoreboards: QueryScoreboardDto) {
         this.server.to(code).emit('scoreUpdated', {
             userId,
             message: `User score updated`,
-            room,
-            scoreboards: room.scoreboards
+            scoreboards
         });
     }
 
@@ -61,5 +61,11 @@ export class RoomGateway {
     handleLeaveRoom(@MessageBody() data: { code: string }, @ConnectedSocket() client: Socket) {
         const { code } = data;
         client.leave(code);
+    }
+
+    @SubscribeMessage('updateScore')
+    handlUpdateUserScore(@MessageBody() data: { code: string }, @ConnectedSocket() client: Socket) {
+        const { code } = data;
+        client.join(code);
     }
 }

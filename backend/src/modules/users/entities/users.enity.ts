@@ -8,7 +8,7 @@ import {
     ManyToMany,
     JoinTable
 } from 'typeorm';
-import { Scoreboard } from 'src/modules/scoreBoards/entities/scoreboard.entity';
+import { Scoreboard } from 'src/modules/rooms/entities/scoreboard.entity';
 import { Room } from 'src/modules/rooms/entities/room.entity';
 import { Exclude } from 'class-transformer';
 import { CommonStatus, UserRole } from 'src/utils/constants';

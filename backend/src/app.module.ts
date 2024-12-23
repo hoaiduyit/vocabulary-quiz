@@ -7,10 +7,9 @@ import { DatabaseModule } from './database/database.module';
 import { UserModule } from './modules/users/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RoomModule } from './modules/rooms/room.module';
-import { ScoreboardModule } from './modules/scoreBoards/scoreboard.module';
 
 @Module({
-    imports: [ConfigModule, DatabaseModule, UserModule, RoomModule, AuthModule, ScoreboardModule],
+    imports: [ConfigModule, DatabaseModule, UserModule, RoomModule, AuthModule],
     controllers: [AppController],
     providers: [AppService, JwtStrategy]
 })

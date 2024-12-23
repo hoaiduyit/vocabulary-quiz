@@ -13,6 +13,10 @@ interface ModalProps {
   hasLoadingState?: boolean;
   children?: ReactNode;
   size?: DialogProps['maxWidth'];
+  disabledSubmitButton?: boolean;
+  preventEscapeCloser?: boolean;
+  preventBackdropClickClose?: boolean;
+  showAction?: boolean;
   onClose: () => void;
   onSubmit?: () => Promise<void>;
 }
@@ -24,12 +28,27 @@ export const Modal = ({
   submitButtonText,
   hasLoadingState,
   size = 'sm',
+  disabledSubmitButton = false,
+  preventEscapeCloser = false,
+  preventBackdropClickClose = false,
+  showAction = true,
   children,
   onSubmit,
 }: ModalProps) => {
   const [loading, setLoading] = useState(false);
 
+  const handleClose = (_: unknown, reason: 'backdropClick' | 'escapeKeyDown') => {
+    if (preventEscapeCloser && reason === 'escapeKeyDown') {
+      return;
+    }
+    if (preventBackdropClickClose && reason === 'backdropClick') {
+      return;
+    }
+    onClose();
+  };
+
   const handleSubmit = async () => {
+    if (disabledSubmitButton) return;
     if (hasLoadingState) {
       setLoading(true);
       await onSubmit?.();
@@ -40,17 +59,24 @@ export const Modal = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth={size}>
+    <Dialog open={open} onClose={handleClose} fullWidth maxWidth={size}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>{children}</DialogContent>
-      <DialogActions>
-        <Button variant="outlined" onClick={onClose}>
-          Cancel
-        </Button>
-        <LoadingButton loading={loading} variant="contained" onClick={handleSubmit}>
-          {submitButtonText}
-        </LoadingButton>
-      </DialogActions>
+      {showAction && (
+        <DialogActions>
+          <Button variant="outlined" onClick={onClose}>
+            Cancel
+          </Button>
+          <LoadingButton
+            loading={loading}
+            disabled={disabledSubmitButton}
+            variant="contained"
+            onClick={handleSubmit}
+          >
+            {submitButtonText}
+          </LoadingButton>
+        </DialogActions>
+      )}
     </Dialog>
   );
 };

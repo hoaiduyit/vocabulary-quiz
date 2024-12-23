@@ -23,6 +23,10 @@ export class SocketService {
     this.socket.emit('leaveRoom', { code });
   }
 
+  updateScoreEmit(code: string) {
+    this.socket.emit('updateScore', { code });
+  }
+
   joinRoom(cb: (data: any) => void) {
     this.socket.once('userJoined', (data) => {
       console.log('User joined:', data);
@@ -51,6 +55,13 @@ export class SocketService {
 
     this.socket.once('hostLeft', (data) => {
       console.log('Host left:', data);
+      cb(data);
+    });
+  }
+
+  updatedUserScores(cb: (data: any) => void) {
+    this.socket.once('scoreUpdated', (data) => {
+      console.log('user score updated', data);
       cb(data);
     });
   }
