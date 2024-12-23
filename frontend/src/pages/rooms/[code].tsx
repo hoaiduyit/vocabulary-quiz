@@ -1,3 +1,4 @@
+import { Leaderboard } from '@/components/Leaderboard/Leaderboard';
 import { Modal } from '@/components/Modal/Modal';
 import { quizs } from '@/constants';
 import { useSignInDialogCommit } from '@/contexts/signin.context';
@@ -11,7 +12,8 @@ import { ScoreboardType } from '@/types/scoreboard.type';
 import { Button, Chip } from '@mui/material';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import Snackbar from '@mui/material/Snackbar';
 
 export async function getServerSideProps({ query }: GetServerSidePropsContext) {
   if (!query?.code) return { notFound: true };
@@ -50,11 +52,11 @@ function RoomPage({
   const fetching = useUserProfileSelector((store) => store.fetching);
   const signInDialogCommit = useSignInDialogCommit();
   const [roomData, setRoomData] = useState<RoomType | null>(room);
-  const [leaderboard, setLeaderboard] = useState(scoreboards.scoreboards);
   const [quizNo, setQuizNo] = useState(0);
   const [selectedAnwsers, setSelectedAnwsers] = useState<{ [key: number]: number }>(
     {} as { [key: number]: number },
   );
+  const [notifyUserJoinOrLeave, setNotifyUserJoinOrLeave] = useState('');
 
   const handleOpenSigninDialog = () => {
     signInDialogCommit({
@@ -77,6 +79,10 @@ function RoomPage({
     }));
   };
 
+  const handleCloseNotify = () => {
+    setNotifyUserJoinOrLeave('');
+  };
+
   const handleSubmitQuiz = async () => {
     try {
       const correctedAnwsers = quizs
@@ -94,14 +100,12 @@ function RoomPage({
   useEffect(() => {
     const code = query.code as string;
     socketService.joinEmit(code);
-    socketService.updateScoreEmit(code);
     socketService.joinRoom((data) => {
+      setNotifyUserJoinOrLeave(data.message);
       setRoomData(data.room);
     });
-    socketService.updatedUserScores((data) => {
-      setLeaderboard(data.scoreboards.scoreboards);
-    });
     socketService.leaveRoom((data) => {
+      setNotifyUserJoinOrLeave(data.message);
       setRoomData(data.room);
     });
     return () => {
@@ -114,18 +118,7 @@ function RoomPage({
     <div className="p-6 flex flex-col gap-4">
       <h2 className="text-xl">Participants: {roomData?.participants?.length || 0}</h2>
       <div className="flex gap-2">
-        <div className="w-1/6 flex flex-col gap-2">
-          <h4 className="text-lg font-bold uppercase">leaderboard</h4>
-          <ul className="list-decimal pl-4">
-            {leaderboard.map((item) => (
-              <li key={item.id}>
-                <strong>{item.user.displayName}</strong>
-                <br />
-                Scores: {item.score}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <Leaderboard scoreboards={scoreboards.scoreboards} socketService={socketService} />
         <div className="w-5/6 flex flex-col gap-6">
           <p className="text-lg">{quizs[quizNo].question}</p>
           <div className="flex gap-4 items-center">
@@ -188,6 +181,13 @@ function RoomPage({
           </Button>
         </div>
       </Modal>
+      <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        autoHideDuration={3000}
+        open={!!notifyUserJoinOrLeave}
+        onClose={handleCloseNotify}
+        message={notifyUserJoinOrLeave}
+      />
     </div>
   );
 }

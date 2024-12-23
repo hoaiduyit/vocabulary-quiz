@@ -163,10 +163,20 @@ export class RoomService {
     }
 
     async joinRoom(code: string, userId: string): Promise<number> {
-        const room = await this.RoomRepository.findOne({
-            where: { code },
-            relations: ['participants']
-        });
+        const room = await this.RoomRepository.createQueryBuilder('room')
+            .leftJoinAndSelect('room.participants', 'participants')
+            .select([
+                'room.id',
+                'room.code',
+                'room.hostId',
+                'room.status',
+                'room.createdAt',
+                'room.updatedAt',
+                'participants.id',
+                'participants.displayName'
+            ])
+            .where('room.code = :code', { code })
+            .getOne();
         if (!room) {
             throw new NotFoundException('Room not found');
         }
@@ -202,10 +212,20 @@ export class RoomService {
     }
 
     async leaveRoom(code: string, userId: string): Promise<number> {
-        const room = await this.RoomRepository.findOne({
-            where: { code },
-            relations: ['participants']
-        });
+        const room = await this.RoomRepository.createQueryBuilder('room')
+            .leftJoinAndSelect('room.participants', 'participants')
+            .select([
+                'room.id',
+                'room.code',
+                'room.hostId',
+                'room.status',
+                'room.createdAt',
+                'room.updatedAt',
+                'participants.id',
+                'participants.displayName'
+            ])
+            .where('room.code = :code', { code })
+            .getOne();
         if (!room) {
             throw new NotFoundException('Room not found');
         }
